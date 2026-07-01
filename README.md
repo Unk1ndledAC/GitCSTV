@@ -2,6 +2,12 @@
 
 Turn your GitHub stats into a HLTV-style CS player card.
 
+<p style="text-align: center;">
+  <img src="example-1.png" width="30%" alt="GitCSTV 示例卡片 1" />
+  <img src="example-2.png" width="30%" alt="GitCSTV 示例卡片 2" />
+  <img src="example.png" width="30%" alt="GitCSTV 示例卡片 3" />
+</p>
+
 ## How it works
 
 1. **Fetch** — pulls your public GitHub profile, repositories, and recent activity via the REST API.
