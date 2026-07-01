@@ -1,4 +1,4 @@
-"""Flask web application for GitCSTS — live HLTV-style card generation."""
+"""Flask web application for GitCSTV — live HLTV-style card generation."""
 
 import base64
 import os
