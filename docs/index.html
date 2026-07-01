@@ -220,11 +220,13 @@ async function renderCard(data,stats){
     cv.style.width=W+'px';cv.style.height=H+'px';
     const ctx=cv.getContext('2d');
     ctx.scale(dpr,dpr);
+    ctx.textBaseline='top'; // pixel-aligned text rendering
+    ctx.imageSmoothingEnabled=true;
 
     const bgc='#111111', gold='#d4af37', gold2='#aa8c28', w='#f5f5f5', g='#a5a5a5', d='#737373', bb='#323232', bf='#a0a0a0', gn='#4caf50';
 
     function bw(t,f){ctx.font=f;return ctx.measureText(t).width}
-    function txt(t,x,y,f,c){ctx.font=f;ctx.fillStyle=c;ctx.fillText(t,x,y)}
+    function txt(t,x,y,f,c){ctx.font=f;ctx.fillStyle=c;ctx.fillText(t,Math.round(x),Math.round(y))}
     function txtc(t,x,y,f,c){const ww=bw(t,f);txt(t,x-ww/2,y,f,c)}
     function rect(x,y,w,h,c,r=0){ctx.fillStyle=c;if(r){ctx.beginPath();rr(x,y,w,h,r);ctx.fill()}else ctx.fillRect(x,y,w,h)}
     function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath()}
