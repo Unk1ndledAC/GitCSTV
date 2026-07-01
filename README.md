@@ -1,6 +1,6 @@
 # GitCSTV
 
-GitHub stats turned into an HLTV-style CS player card — inspired by [gitfut.com](https://gitfut.com/).
+Turn your GitHub stats into a HLTV-style CS player card.
 
 ## How it works
 

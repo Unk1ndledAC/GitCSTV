@@ -1,0 +1,383 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GitCSTV — Your GitHub, rated HLTV-style</title>
+<style>
+:root{--bg:#0c0c0c;--card:#1a1a1a;--gold:#d4af37;--gold-h:#e8c84a;--text:#eee;--t2:#999;--t3:#666;--bd:#333}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6}
+.hero{text-align:center;padding:60px 20px 50px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(ellipse at 50% 0%,rgba(212,175,55,.06) 0%,transparent 60%);pointer-events:none}
+.hero h1{font-family:Impact,'Arial Black',sans-serif;font-size:clamp(2.2em,7vw,4em);color:var(--gold);letter-spacing:3px;text-transform:uppercase;font-weight:900;position:relative;line-height:1.1}
+.hero .tag{font-size:1.1em;color:var(--t2);margin-top:10px}
+.hero .try{font-size:.9em;color:var(--t3);margin-top:8px}
+.hero .try a{color:var(--gold);text-decoration:none;font-weight:700;cursor:pointer}
+.hero .try a:hover{color:var(--gold-h);text-decoration:underline}
+.hero .try span{color:var(--t3)}
+.input-section{max-width:500px;margin:0 auto 20px;padding:0 20px}
+.input-row{display:flex;gap:8px;background:var(--card);border:2px solid var(--bd);border-radius:10px;padding:5px;transition:border-color .3s}
+.input-row:focus-within{border-color:var(--gold);box-shadow:0 0 18px rgba(212,175,55,.15)}
+.input-row input{flex:1;padding:14px 16px;font-size:1.1em;font-family:inherit;background:transparent;border:none;color:var(--text);outline:none}
+.input-row input::placeholder{color:var(--t3)}
+.input-row button{padding:12px 24px;font-size:1em;font-weight:900;font-family:Impact,'Arial Black',sans-serif;background:var(--gold);color:#111;border:none;border-radius:7px;cursor:pointer;letter-spacing:2px;text-transform:uppercase;transition:background .2s}
+.input-row button:hover{background:var(--gold-h)}
+.input-row button:disabled{background:#444;color:#888;cursor:not-allowed}
+.result-area{max-width:860px;margin:0 auto;padding:0 20px;text-align:center}
+.loading{padding:50px 0;color:var(--t3)}.loading .spin{width:36px;height:36px;border:3px solid var(--bd);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 14px}@keyframes spin{to{transform:rotate(360deg)}}
+.error{color:#e74c3c;padding:18px;background:rgba(231,76,60,.1);border:1px solid rgba(231,76,60,.3);border-radius:8px;margin:16px auto;max-width:460px;font-size:.95em}
+.card-display{display:none;margin:0 auto;animation:fadeIn .4s}@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.card-display.show{display:block}
+.card-display canvas{max-width:100%;border-radius:10px;box-shadow:0 10px 50px rgba(0,0,0,.7)}
+.actions{margin-top:20px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.actions button{padding:10px 22px;font-family:inherit;font-weight:700;font-size:.9em;border-radius:7px;cursor:pointer;border:1px solid var(--bd);background:var(--card);color:var(--text);transition:all .2s}
+.actions button:hover{border-color:var(--gold);background:#262626}
+.actions button.primary{background:var(--gold);color:#111;border-color:var(--gold)}
+.actions button.primary:hover{background:var(--gold-h)}
+.pills{display:none;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:16px}.pills.show{display:flex}
+.pill{position:relative;background:var(--card);border:1px solid var(--bd);border-radius:7px;padding:7px 12px;text-align:center;cursor:help;transition:border-color .2s;min-width:56px}
+.pill:hover{border-color:var(--gold)}
+.pill .v{font-size:1.1em;font-weight:900;color:var(--gold)}.pill .l{font-size:.6em;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-top:1px}
+.pill .tip{visibility:hidden;opacity:0;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#2a2a2a;color:#ddd;font-size:.7em;padding:7px 10px;border-radius:5px;pointer-events:none;transition:opacity .15s;z-index:10;border:1px solid #555;max-width:250px;white-space:normal;text-align:left;line-height:1.4}
+.pill .tip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:#2a2a2a}
+.pill:hover .tip{visibility:visible;opacity:1}
+.how-section{max-width:800px;margin:70px auto 50px;padding:0 20px}
+.how-section h2{font-family:Impact,'Arial Black',sans-serif;font-size:1.8em;color:var(--text);text-transform:uppercase;letter-spacing:2px;text-align:center;margin-bottom:6px}
+.how-section .hs{text-align:center;color:var(--t3);font-size:.9em;margin-bottom:36px}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;margin-bottom:40px}
+.sc{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:24px 18px;text-align:center;transition:border-color .3s}.sc:hover{border-color:var(--gold)}
+.sc .sn{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:50%;background:var(--gold);color:#111;font-weight:900;font-size:1.2em;margin-bottom:12px}
+.sc h3{font-family:Impact,'Arial Black',sans-serif;font-size:1em;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px}
+.sc p{color:var(--t2);font-size:.85em;line-height:1.5}
+.stable{background:var(--card);border:1px solid var(--bd);border-radius:12px;overflow:hidden;margin-top:34px}
+.stable h3{font-family:Impact,'Arial Black',sans-serif;text-transform:uppercase;letter-spacing:2px;padding:18px 20px 10px;font-size:.95em}
+.stable table{width:100%;border-collapse:collapse;font-size:.82em}
+.stable th{background:rgba(212,175,55,.1);color:var(--text);padding:10px 16px;text-align:left;text-transform:uppercase;letter-spacing:1px;font-size:.75em;border-bottom:1px solid var(--bd)}
+.stable td{padding:10px 16px;color:var(--t2);border-bottom:1px solid rgba(51,51,51,.5)}
+.stable tr:last-child td{border-bottom:none}
+.stable td:first-child{color:var(--gold);font-weight:700}
+.stable td:last-child{color:var(--t3);font-size:.8em}
+.tech{text-align:center;color:var(--t3);font-size:.8em;line-height:1.7;margin-top:30px}
+.site-footer{border-top:1px solid var(--bd);padding:36px 20px;text-align:center;margin-top:50px}
+.site-footer .fb{font-family:Impact,'Arial Black',sans-serif;font-size:1em;color:var(--t3);text-transform:uppercase;letter-spacing:2px}
+.site-footer a{color:var(--t2);text-decoration:none;font-size:.85em;margin:0 8px}.site-footer a:hover{color:var(--gold)}
+.site-footer .disc{font-size:.7em;color:var(--t3);max-width:550px;margin:8px auto 0;opacity:.6}
+@media(max-width:600px){.input-row{flex-direction:column}.input-row button{width:100%}.steps{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<section class="hero">
+    <h1>GET SCOUTED.</h1>
+    <p class="tag">Your GitHub stats, turned into an HLTV-style CS player card.</p>
+    <p class="try">
+        try <a onclick="quickTry('torvalds')">torvalds</a> &middot;
+        <a onclick="quickTry('ThePrimeagen')">ThePrimeagen</a> &middot;
+        <a onclick="quickTry('t3dotgg')">t3dotgg</a> &middot; or your own
+    </p>
+</section>
+
+<div class="input-section">
+    <div class="input-row">
+        <input type="text" id="u" placeholder="Enter GitHub username..." autocomplete="off" autofocus>
+        <button id="b" onclick="go()">GENERATE</button>
+    </div>
+</div>
+
+<div class="result-area">
+    <div id="load" class="loading" style="display:none"><div class="spin"></div><p>Scouting your profile...</p></div>
+    <div id="err"></div>
+    <div id="cd" class="card-display"><canvas id="cv"></canvas></div>
+    <div id="pills" class="pills"></div>
+    <div class="actions" id="acts" style="display:none">
+        <button class="primary" onclick="dl()">DOWNLOAD</button>
+        <button onclick="share()">COPY</button>
+        <a id="ghl" href="#" target="_blank" style="text-decoration:none"><button>GITHUB</button></a>
+    </div>
+</div>
+
+<section class="how-section">
+    <h2>How it works</h2>
+    <p class="hs">From GitHub profile to CS player card — entirely in your browser</p>
+    <div class="steps">
+        <div class="sc"><div class="sn">1</div><h3>Fetch</h3><p>GitCSTV pulls your public GitHub profile, repos, and activity via the REST API — no auth needed.</p></div>
+        <div class="sc"><div class="sn">2</div><h3>Analyze</h3><p>Stars, forks, followers, languages, push frequency, and account age are scored across six dimensions.</p></div>
+        <div class="sc"><div class="sn">3</div><h3>Generate</h3><p>A high-res HLTV-style card is rendered right in your browser. Download and share instantly.</p></div>
+    </div>
+    <div class="stable">
+        <h3>Scoring dimensions</h3>
+        <table>
+            <tr><th>Stat</th><th>What it measures</th><th>Driven by</th></tr>
+            <tr><td>FIREPOWER</td><td>Raw code output & productivity</td><td>Repo count, push frequency</td></tr>
+            <tr><td>STARPOWER</td><td>Star impact & popularity</td><td>Total / max / avg stars</td></tr>
+            <tr><td>LONGEVITY</td><td>Account & project staying power</td><td>Account age, maintained repos</td></tr>
+            <tr><td>IMPACT</td><td>Community reach & influence</td><td>Followers, forks, watches, PRs</td></tr>
+            <tr><td>COLLAB</td><td>Open-source collaboration</td><td>Languages, PRs, issues, forks</td></tr>
+            <tr><td>VERSATILE</td><td>Technology range & breadth</td><td>Language count, topics, diversity</td></tr>
+        </table>
+    </div>
+    <div class="tech">Built with pure HTML, CSS, and JavaScript. No backend. No build step.<br>Cards rendered via Canvas 2D API at 800×900px.</div>
+</section>
+
+<footer class="site-footer">
+    <div class="fb">GitCSTV &mdash; HLTV-STYLE TOP 20 &middot; 2026</div>
+    <a href="https://github.com/Unk1ndledAC/GitCSTV" target="_blank">Star on GitHub</a>
+    <div class="disc">Not affiliated with HLTV.org. All data from public GitHub API. &copy; 2026 GitCSTV.</div>
+</footer>
+
+<script>
+// ====== GitHub Client ======
+async function fetchGitHub(user) {
+    const h = {Accept:'application/vnd.github.v3+json'};
+    async function j(url) { const r = await fetch(url,{headers:h}); if(!r.ok) throw new Error(r.status===404?'User not found':'GitHub API error: '+r.status); return r.json(); }
+    async function pag(url,p=5){let a=[],i=1;while(i<=p){const d=await j(url+`?per_page=100&page=${i}&sort=pushed`);if(!d.length)break;a.push(...d);if(d.length<100)break;i++}return a}
+    const [p,re,ev] = await Promise.all([
+        j(`https://api.github.com/users/${user}`),
+        pag(`https://api.github.com/users/${user}/repos`,5),
+        pag(`https://api.github.com/users/${user}/events/public`,3)
+    ]);
+    // Repo stats
+    const rs = re||[];
+    const ts = rs.reduce((s,r)=>s+(r.stargazers_count||0),0);
+    const ms = Math.max(...rs.map(r=>r.stargazers_count||0),0);
+    const tf = rs.reduce((s,r)=>s+(r.forks_count||0),0);
+    const n = rs.length;
+    const s50=rs.filter(r=>(r.stargazers_count||0)>=50).length;
+    const s100=rs.filter(r=>(r.stargazers_count||0)>=100).length;
+    const s500=rs.filter(r=>(r.stargazers_count||0)>=500).length;
+    const s1000=rs.filter(r=>(r.stargazers_count||0)>=1000).length;
+    const lc={};rs.forEach(r=>{if(r.language)lc[r.language]=(lc[r.language]||0)+1});
+    const langs=Object.entries(lc).sort((a,b)=>b[1]-a[1]).map(e=>e[0]);
+    const at=[];rs.forEach(r=>{if(r.topics)at.push(...r.topics)});
+    const tc={};at.forEach(t=>tc[t]=(tc[t]||0)+1);
+    const topTopics=Object.entries(tc).sort((a,b)=>b[1]-a[1]).slice(0,6).map(e=>e[0]);
+    const sorted=rs.sort((a,b)=>(b.stargazers_count||0)-(a.stargazers_count||0));
+    const topR=sorted.slice(0,5).map(r=>({name:r.name,stars:r.stargazers_count||0,forks:r.forks_count||0,language:r.language||'',description:r.description||'',topics:r.topics||[]}));
+    // Events
+    const ec={};ev.forEach(e=>{const t=e.type;ec[t]=(ec[t]||0)+1});
+    const ur=new Set(ev.map(e=>e.repo&&e.repo.name).filter(Boolean)).size;
+    // Age
+    const cd=new Date(p.created_at);
+    const ageD=Math.floor((Date.now()-cd)/86400000);
+    const avatar=(p.avatar_url||'').split('?')[0]+'?s=400';
+    return {
+        login:p.login, name:p.name||p.login, avatar_url:avatar,
+        location:p.location||'', company:p.company||'', bio:p.bio||'',
+        public_repos:p.public_repos||0, public_gists:p.public_gists||0,
+        followers:p.followers||0, following:p.following||0,
+        account_age_days:ageD,
+        repos:{total:n,total_stars:ts,total_forks:tf,max_stars:ms,avg_stars:n?ts/n:0,
+            with_stars:rs.filter(r=>(r.stargazers_count||0)>0).length,
+            star_50:s50,star_100:s100,star_500:s500,star_1000:s1000,
+            languages:langs,top_language:langs[0]||'',language_count:langs.length,
+            top_repos:topR,recent_topics:topTopics},
+        events:{total_events:ev.length,push_count:ec.PushEvent||0,pr_count:ec.PullRequestEvent||0,
+            create_count:ec.CreateEvent||0,issue_count:ec.IssuesEvent||0,
+            watch_count:ec.WatchEvent||0,fork_count:ec.ForkEvent||0,unique_event_repos:ur}
+    };
+}
+
+// ====== Scoring ======
+function clamp(v,l,h){return Math.max(l,Math.min(h,v))}
+function logS(x,b=10,d=5){if(x<=0)return 0;return clamp(Math.log(x+1)/Math.log(b)/d,0,1)}
+function score(data){
+    const r=data.repos, e=data.events;
+    const fp=clamp(30+70*(logS(e.create_count,10,4)*0.3+logS(e.push_count,10,5)*0.4+logS(r.total,10,3)*0.3),0,100);
+    const sp=clamp(30+70*(logS(r.avg_stars,10,8)*0.35+logS(r.max_stars,10,8)*0.35+logS(r.total_stars,10,8)*0.30),0,100);
+    const ageY=data.account_age_days/365.25;
+    const ln=clamp(20+80*(clamp(ageY/12,0,1)*0.5+clamp(r.with_stars/Math.max(r.total,1),0,1)*0.5),0,100);
+    const im=clamp(20+80*(logS(data.followers,10,6)*0.35+logS(r.total_forks,10,6)*0.30+logS(e.watch_count,10,4)*0.15+logS(e.pr_count,10,4)*0.20),0,100);
+    const co=clamp(15+85*(logS(r.language_count,10,3)*0.25+logS(e.pr_count,10,4)*0.25+logS(e.issue_count,10,4)*0.20+logS(r.total_forks,10,5)*0.15+logS(data.following,10,4)*0.15),0,100);
+    const ve=clamp(10+90*(logS(r.language_count,10,3)*0.4+logS(r.recent_topics.length,10,3)*0.35+logS(r.total,10,3)*0.25),0,100);
+    const comp=fp*0.20+ln*0.15+sp*0.30+im*0.20+co*0.10+ve*0.05;
+    const rat=clamp(0.80+comp*0.005,0.80,1.30);
+    // Awards
+    const mvp=[],evp=[];
+    r.top_repos.forEach(r=>{if(r.stars>=1000)mvp.push(r.name);else if(r.stars>=100)evp.push(r.name)});
+    // Events
+    const evs=r.top_repos.slice(0,4).map((r,i)=>{
+        const p=['1st','2nd','3rd'][i]||(i+1+'th');
+        return `${p} ${r.name} ${r.stars.toLocaleString()} ${r.language?'('+r.language+')':''}`;
+    });
+    // Rank
+    let rank=15;
+    if(rat>=1.27)rank=1;else if(rat>=1.24)rank=2;else if(rat>=1.21)rank=3;else if(rat>=1.18)rank=4;
+    else if(rat>=1.15)rank=5;else if(rat>=1.13)rank=6;else if(rat>=1.11)rank=7;else if(rat>=1.09)rank=9;
+    else if(rat>=1.07)rank=11;else if(rat>=1.05)rank=13;
+    return {firepower:Math.round(fp),starpower:Math.round(sp),longevity:Math.round(ln),
+        impact_score:Math.round(im),collaboration:Math.round(co),versatility:Math.round(ve),
+        rating:+rat.toFixed(2),awards:{mvp:mvp.slice(0,4),evp:evp.slice(0,4)},events:evs,rank};
+}
+
+// ====== Card Renderer (Canvas) ======
+async function renderCard(data,stats){
+    const W=800,H=900;
+    const cv=document.getElementById('cv');
+    const dpr=window.devicePixelRatio||1;
+    cv.width=W*dpr;cv.height=H*dpr;
+    cv.style.width=W+'px';cv.style.height=H+'px';
+    const ctx=cv.getContext('2d');
+    ctx.scale(dpr,dpr);
+
+    const bgc='#111111', gold='#d4af37', gold2='#aa8c28', w='#f5f5f5', g='#a5a5a5', d='#737373', bb='#323232', bf='#a0a0a0', gn='#4caf50';
+
+    function bw(t,f){ctx.font=f;return ctx.measureText(t).width}
+    function txt(t,x,y,f,c){ctx.font=f;ctx.fillStyle=c;ctx.fillText(t,x,y)}
+    function txtc(t,x,y,f,c){const ww=bw(t,f);txt(t,x-ww/2,y,f,c)}
+    function rect(x,y,w,h,c,r=0){ctx.fillStyle=c;if(r){ctx.beginPath();rr(x,y,w,h,r);ctx.fill()}else ctx.fillRect(x,y,w,h)}
+    function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath()}
+    const trunc=(s,n)=>s.length<=n?s:s.slice(0,n-3)+'...';
+
+    // Background
+    rect(0,0,W,H,bgc);rect(0,0,5,H,gold);rect(0,0,W,3,gold);
+    for(let i=0;i<H;i++){ctx.fillStyle=`rgba(22,22,22,${0.04+0.07*i/H})`;ctx.fillRect(0,i,W,1)}
+
+    // Avatar
+    const avSz=290,avX=W-avSz-55,avY=50;
+    try{
+        const av=new Image();av.crossOrigin='anonymous';
+        await new Promise((res,rej)=>{av.onload=res;av.onerror=rej;av.src=data.avatar_url});
+        // Glow
+        const gs=avSz+100,gx=avX+avSz/2-gs/2,gy=avY+avSz/2-gs/2;
+        const grad=ctx.createRadialGradient(avX+avSz/2,avY+avSz/2,avSz/2-20,avX+avSz/2,avY+avSz/2,avSz/2+50);
+        grad.addColorStop(0,'rgba(212,175,55,0.15)');grad.addColorStop(1,'rgba(212,175,55,0)');
+        rect(gx,gy,gs,gs,'transparent');ctx.fillStyle=grad;ctx.fillRect(gx,gy,gs,gs);
+        // Circular clip
+        ctx.save();ctx.beginPath();ctx.arc(avX+avSz/2,avY+avSz/2,avSz/2,0,Math.PI*2);ctx.clip();
+        ctx.drawImage(av,avX,avY,avSz,avSz);
+        // Radial fade overlay
+        const fg=ctx.createRadialGradient(avX+avSz/2,avY+avSz/2,avSz*0.35,avX+avSz/2,avY+avSz/2,avSz/2);
+        fg.addColorStop(0,'rgba(0,0,0,0)');fg.addColorStop(1,'rgba(17,17,17,1)');
+        ctx.fillStyle=fg;ctx.fillRect(avX,avY,avSz,avSz);ctx.restore();
+    }catch(e){/* placeholder */}
+    if(!data.avatar_url||true){ /* always draw circle edge */
+        ctx.beginPath();ctx.arc(avX+avSz/2,avY+avSz/2,avSz/2,0,Math.PI*2);
+        ctx.strokeStyle='rgba(212,175,55,0.3)';ctx.lineWidth=2;ctx.stroke();
+    }
+
+    // Layout
+    const lx=20,rx=avX-15;
+
+    // Header
+    const hnd=data.login.toUpperCase();
+    const fH='bold 58px Impact,"Arial Black",sans-serif',fS='17px "Segoe UI",Arial,sans-serif';
+    let cx2=lx;
+    for(const ch of hnd){
+        if(ch==='0'){
+            const m=bw('0',fH);const bm=ctx.measureText('0');const hh=bm.actualBoundingBoxAscent+bm.actualBoundingBoxDescent;
+            cx2+=m/2;const cy=30+hh/2;const r=Math.min(m,hh)/2-2;
+            ctx.beginPath();ctx.arc(cx2,cy,r,0,Math.PI*2);ctx.strokeStyle=gold;ctx.lineWidth=3;ctx.stroke();
+            ctx.beginPath();ctx.moveTo(cx2-r,cy);ctx.lineTo(cx2+r,cy);ctx.strokeStyle=gold;ctx.lineWidth=2;ctx.stroke();
+            ctx.beginPath();ctx.moveTo(cx2,cy-r);ctx.lineTo(cx2,cy+r);ctx.strokeStyle=gold;ctx.lineWidth=2;ctx.stroke();
+            cx2+=m/2+4;
+        }else{txt(ch,cx2,30,fH,gold);cx2+=bw(ch,fH)}
+    }
+    const ageY=data.account_age_days/365.25;
+    const parts=[data.name];if(data.company)parts.push(data.company);if(data.location)parts.push(data.location);parts.push(ageY.toFixed(1)+'y on GitHub');
+    txt(parts.join(' \u2022 '),lx,90,fS,g);
+
+    // MVP/EVP panel
+    const ay=120,ah=82;
+    rect(lx,ay,rx-lx,ah,'rgba(28,28,28,0.86)');ctx.strokeStyle='rgba(75,75,75,0.8)';ctx.lineWidth=1;ctx.strokeRect(lx,ay,rx-lx,ah);
+    const fsec='bold 16px Impact,"Arial Black",sans-serif',fav='14px "Segoe UI",Arial,sans-serif';
+    txt('MVP AWARDS',lx+8,ay+20,fsec,w);txt('EVP AWARDS',(lx+rx)/2+5,ay+20,fsec,w);
+    const mvp=stats.awards.mvp,evp=stats.awards.evp;
+    for(let i=0;i<Math.max(mvp.length,evp.length,1);i++){
+        const mt=i<mvp.length?'\u2022 '+trunc(mvp[i],14):'\u2022 \u2014';
+        const et=i<evp.length?'\u2022 '+trunc(evp[i],14):'\u2022 \u2014';
+        txt(mt,lx+10,ay+44+i*19,fav,i<mvp.length?gold:d);
+        txt(et,(lx+rx)/2+5,ay+44+i*19,fav,i<evp.length?gold2:d);
+    }
+
+    // Events
+    let ey=ay+ah+12;
+    txt('EVENT PLACINGS',lx,ey,fsec,w);ey+=24;
+    const evs=stats.events;const cw=(rx-lx)/3;const fbd='bold 13px Impact,"Arial Black",sans-serif',fev='13px "Segoe UI",Arial,sans-serif',fsm='11px "Segoe UI",Arial,sans-serif';
+    for(let i=0;i<Math.min(evs.length,3);i++){
+        const px=lx+i*cw,pl=['1ST','2ND','3RD'][i];
+        rect(px,ey,30,18,gold,3);txtc(pl,px+15,ey+14,fbd,bgc);
+        const bits=evs[i].split(' ');const rn=trunc(bits[1],14);const rd=bits.slice(2).join(' ');
+        txt(rn,px,ey+34,fev,w);txt(rd,px,ey+50,fsm,g);
+    }
+
+    // Stats panel
+    let sy=ey+66,sh=268;
+    rect(lx,sy,rx-lx,sh,'rgba(28,28,28,0.86)');ctx.strokeStyle='rgba(75,75,75,0.8)';ctx.lineWidth=1;ctx.strokeRect(lx,sy,rx-lx,sh);
+    txt('PERSONAL STATS',lx+8,sy+18,fsec,w);
+    const fL='bold 14px Impact,"Arial Black",sans-serif',fV='15px "Segoe UI",Arial,sans-serif';
+    const lblW=92,barW=(rx-lx)-lblW-55,bx=lx+lblW+8,ax=bx+barW*0.5,by=sy+38;
+    txtc('AVERAGE',ax,by-14,fsm,d);
+    const sits=[['FIREPOWER',stats.firepower],['STARPOWER',stats.starpower],['LONGEVITY',stats.longevity],
+        ['IMPACT',stats.impact_score],['COLLAB',stats.collaboration],['VERSATILE',stats.versatility],['RATING',Math.round(stats.rating*100)]];
+    sits.forEach(([lb,val],j)=>{
+        const ry=by+j*32,isR=lb==='RATING';
+        txt(lb,lx+8,ry,fL,isR?gold:g);
+        const bary=ry-4;
+        rect(bx,bary,barW,12,bb,6);
+        const maxV=isR?150:100,ratio=Math.min(val/maxV,1);
+        const fw2=Math.max(ratio*barW,0);
+        if(fw2>0)rect(bx,bary,fw2,12,isR?gn:bf,6);
+        ctx.strokeStyle=w;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(ax,bary-2);ctx.lineTo(ax,bary+14);ctx.stroke();
+        const vt=isR?stats.rating.toFixed(2):String(val);
+        txt(vt,bx+barW+10,ry,fV,w);
+    });
+
+    // Notable stats
+    let ny=sy+sh+12;
+    txt('NOTABLE STATS',lx,ny,fsec,w);ny+=24;
+    const notes=[
+        stats.rating.toFixed(2)+' rating (#'+stats.rank+')',Number(data.repos.total_stars).toLocaleString()+' total stars',
+        Number(data.repos.max_stars).toLocaleString()+' max repo stars',data.repos.total+' public repos',
+        ageY.toFixed(1)+' years on GitHub',Number(data.followers).toLocaleString()+' followers',
+        data.repos.language_count+' languages',Number(data.repos.total_forks).toLocaleString()+' forks'];
+    for(let i=0;i<4;i++)txt('\u2022 '+notes[i],lx,ny+i*22,fev,g);
+    for(let i=0;i<4;i++)txt('\u2022 '+notes[i+4],(lx+rx)/2,ny+i*22,fev,g);
+
+    // Rank & Branding
+    const fR='bold 130px Impact,"Arial Black",sans-serif',fB='bold 14px Impact,"Arial Black",sans-serif';
+    const rkY=700;txt('#'+stats.rank,W-245,rkY,fR,gold);
+    const b1='HLTV-STYLE',b2='TOP 20  //  2026';
+    const rkw=bw('#'+stats.rank,fR);const rcx=W-245+rkw/2;
+    txtc(b1,rcx,rkY+125,fB,g);txtc(b2,rcx,rkY+146,fB,d);
+}
+
+// ====== UI ======
+const descs={
+    firepower:'Raw code output & productivity — based on repo count, push frequency, and creation events',
+    starpower:'Star impact & project popularity — based on total stars, max stars, and average stars per repo',
+    longevity:'Account & project staying power — based on account age and repo maintenance consistency',
+    impact:'Community reach & influence — based on followers, forks, watch events, and PR activity',
+    collaboration:'Open-source collaboration — based on language diversity, PRs, issues, and forks',
+    versatility:'Technology range & breadth — based on language count, topics, and repo diversity',
+    rating:'Overall GitHub rating — weighted composite of all six stat dimensions above'};
+
+function quickTry(u){document.getElementById('u').value=u;go()}
+async function go(){
+    const user=document.getElementById('u').value.trim();if(!user)return;
+    const b=document.getElementById('b'),l=document.getElementById('load'),e=document.getElementById('err'),
+        cd=document.getElementById('cd'),ps=document.getElementById('pills'),ac=document.getElementById('acts');
+    e.innerHTML='';cd.classList.remove('show');ps.classList.remove('show');ps.innerHTML='';ac.style.display='none';
+    l.style.display='block';b.disabled=true;
+    try{
+        const data=await fetchGitHub(user);
+        const stats=score(data);
+        await renderCard(data,stats);
+        cd.classList.add('show');
+        document.getElementById('ghl').href='https://github.com/'+user;
+        const bad=[['firepower','FIREPOWER',stats.firepower],['starpower','STARPOWER',stats.starpower],
+            ['longevity','LONGEVITY',stats.longevity],['impact','IMPACT',stats.impact_score],
+            ['collaboration','COLLAB',stats.collaboration],['versatility','VERSATILE',stats.versatility],
+            ['rating','RATING',stats.rating.toFixed(2)],[null,'RANK','#'+stats.rank]];
+        ps.innerHTML=bad.map(b=>`<div class="pill"${b[0]?' title="'+(descs[b[0]]||'').replace(/"/g,'&quot;')+'"':''}><div class="v">${b[2]}</div><div class="l">${b[1]}</div>${b[0]&&descs[b[0]]?'<div class="tip">'+descs[b[0]]+'</div>':''}</div>`).join('');
+        ps.classList.add('show');ac.style.display='flex';
+    }catch(er){e.innerHTML=`<div class="error">${er.message||er}</div>`}
+    finally{l.style.display='none';b.disabled=false}
+}
+function dl(){const c=document.getElementById('cv');const a=document.createElement('a');a.download='gitcstv_'+document.getElementById('u').value.trim()+'.png';a.href=c.toDataURL('image/png');a.click()}
+function share(){const c=document.getElementById('cv');navigator.clipboard.writeText(c.toDataURL('image/png')).catch(()=>{});alert('Card URL copied!')}
+document.getElementById('u').addEventListener('keydown',e=>{if(e.key==='Enter')go()});
+</script>
+</body>
+</html>
